@@ -12,7 +12,7 @@
 		
 		var canvas = document.getElementById("gameCanvas");
 		var ctx = canvas.getContext("2d");
-		
+		Math.seedrandom("gol spo");
 		var und = undefined;
 		
 		function setUpCanvas(){ctx.translate(canvas.width/2,canvas.height/2);
@@ -46,7 +46,7 @@
 		
 		function Player(){
 			this.r=0;        // for player's Rotation
-			this.s=0.005;    // for player's rotation Speed
+			this.s=0.01;    // for player's rotation Speed
 			this.c="orange"; // for player's Color
 			this.bc="green"; // for Beam Color
 		}
@@ -76,17 +76,26 @@
 			this.x = x;
 			this.y = y;
 			this.r=(r!=und)?r:0;
-			this.s=(s!=und)?s:1;
-			this.rs =(rs!=und)?rs:0.5; // Rotation Speed 
+			this.s=(s!=und)?s:1;     // Speed
+			this.rs =(rs!=und)?rs:0.1; // Rotation Speed 
 			this.rr =(rr!=und)?rr:0.1; // Rotation Randomness // + or -
 		}
 		StraightWalker.prototype.update=function(){
-			this.r = ((Math.atan2(this.x,this.y)/Math.PI)-1)%2;
+			var dr = ((Math.atan2(this.x,this.y)/Math.PI)-1)%2;
+			var acw = (dr-this.r+2)%2;
+			var cw = (this.r-dr+2)%2;
+			this.r = ((acw<cw)?this.r+Math.min(acw,this.rs):this.r-Math.min(cw,this.rs))+this.rr-Math.random2()*this.rr*2;
 			this.x+=Math.sin(Math.PI*this.r)*this.s;
 			this.y+=Math.cos(Math.PI*this.r)*this.s;
 		}
 		StraightWalker.prototype.draw = function(){
-			ctx.fillRect(this.x-5,this.y-5,10,10);
+			ctx.save();
+			ctx.translate(this.x,this.y);
+			ctx.rotate(Math.PI*(1-this.r))
+			
+			ctx.fillRect(-5,-5,10,10);
+			
+			ctx.restore();
 		}
 		
 		var player = new Player(); 
