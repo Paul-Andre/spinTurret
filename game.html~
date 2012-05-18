@@ -12,7 +12,73 @@
 		var canvas = document.getElementById("gameCanvas");
 		var ctx = canvas.getContext("2d");
 		
-		ctx.fillRect(23,45,10,10);
+		function setUpCanvas(){ctx.translate(canvas.width/2,canvas.height/2);
+		ctx.beginPath();
+		ctx.arc(0, 0, 250, 0, Math.PI*2, true); 
+		ctx.closePath();
+		ctx.fill();
+		ctx.globalCompositeOperation = "source-atop";
+		}
+		
+		       	    window.requestAnimFrame = (function(){
+          return  window.requestAnimationFrame       || 
+                  window.webkitRequestAnimationFrame || 
+                  window.mozRequestAnimationFrame    || 
+                  window.oRequestAnimationFrame      || 
+                  window.msRequestAnimationFrame     || 
+                  function(/* function */ callback, /* DOMElement */ element){
+                    window.setTimeout(callback, 1000 / 60);
+                  };
+    })();	
+		
+		
+		
+		setUpCanvas();
+		ctx.fillStyle = "red";
+		ctx.fillRect(-5,-5,10,10);
+		ctx.strokeStyle = "red";
+		
+		var rot = 0;
+		
+		function Player(){
+			this.r=0;        // for player's Rotation
+			this.s=0.005;    // for player's rotation Speed
+			this.c="orange"; // for player's Color
+			this.bc="green"; // for Beam Color
+		}
+		
+		Player.prototype.update=function(){
+			this.r%=2;
+			this.r+=this.s;
+		}
+		
+		Player.prototype.draw=function(){
+			ctx.save();
+			
+			ctx.strokeStyle = this.bc;
+			ctx.beginPath();
+			ctx.moveTo(0,0);
+			ctx.lineTo(Math.sin(Math.PI*this.r)*250,Math.cos(Math.PI*this.r)*250);
+			ctx.stroke();
+			
+			ctx.restore();
+		}
+		
+		var player = new Player(); 
+		
+		function updateAll(){
+			player.update();
+		}
+		
+		function drawAll() {
+			player.draw();
+			requestAnimFrame(drawAll);
+		}
+		
+		
+		setInterval(updateAll,50);
+		drawAll();
+		
 	</script>
 	
 </html>
