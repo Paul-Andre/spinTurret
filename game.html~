@@ -46,7 +46,7 @@
 		
 		function Player(){
 			this.r=0;        // for player's Rotation
-			this.s=0.07;    // for player's rotation Speed
+			this.s=0.007;    // for player's rotation Speed
 			this.c="orange"; // for player's Color
 			this.bc="green"; // for Beam Color
 		}
@@ -73,14 +73,14 @@
 			this.s*=-1;
 		}
 		
-		function StraightWalker(x,y,s,r,rs,rr,rd){
+		function StraightWalker(x,y,r,s,rs,rr,rd){
 			this.x = x;
 			this.y = y;
 			this.r=(r!=und)?r:0;
 			this.s=(s!=und)?s:1;     // Speed
-			this.rs =(rs!=und)?rs:2; // Rotation Speed 
-			this.rr =(rr!=und)?rr:0.0; // Rotation Randomness // + or -
-			this.rd =(rr!=und)?rr:-0.1; // Rotation Deviation // makes it go in spirals
+			this.rs =(rs!=und)?rs:0.05; // Rotation Speed 
+			this.rr =(rr!=und)?rr:0.01; // Rotation Randomness // + or -
+			this.rd =(rd!=und)?rd:0; // Rotation Deviation // makes it go in spirals
 		}
 		StraightWalker.prototype.update=function(){
 			var dr = ((Math.atan2(this.x,this.y)/Math.PI)-1)%2+this.rd;
@@ -104,7 +104,7 @@
 		var player = new Player(); 
 		var enemies =[];
 		 for(var i=0,n=50;i<n;i++){
-		 enemies[i] = new StraightWalker(Math.sin(Math.PI*i/n*2)*200,Math.cos(Math.PI*i/n*2)*200); 
+		 enemies[i] = new StraightWalker(Math.sin(Math.PI*i/n*2+Math.random2())*250,Math.cos(Math.PI*i/n*2+Math.random2())*250,Math.PI*i/n,Math.random2()*0.1+0.1,0.05,Math.random2()*0.2,Math.random2()*0.2); 
 		 
 		 }
 		
@@ -135,7 +135,7 @@
 		}
 		
 		
-		setInterval(updateAll,50);
+		setInterval(updateAll,10);
 		drawAll();
 		
 	</script>
