@@ -44,16 +44,53 @@
 		var rot = 0;
 		var invPI = 1/Math.PI;
 		
+		
+
+		var physics = [];
+		
+		function CollisionCircle(x,y,r,h,f){
+			this.x = x;
+			this.y = y;
+			this.r = r;
+			this.h = h; // Host (the object who has the circle)
+			this.f = f; // Function
+			this.dead = false;
+			physics.push(this);
+		}
+		
+		function circleCircle(a,b){
+			return (a.x-b.x)*(a.x-b.x)+(a.y-b.y)*(a.y-b.y)<(a.r+b.r)*(a.r+b.r);
+		}
+		
+		
+		physics.check = function(){
+			for(var i=0;i<this.length;i++){
+				if(this[i].dead){this.splice(i,1);i--;}
+			}
+			for (var i=0; i<this.length;i++){
+				for (var j=i+1; j<this.length;j++){
+					if (circleCircle(this[i],this[j])){
+						(this[i].f)&&(this[i].f.call(this[i].h,this[j].h));
+						(this[j].f)&&(this[j].f.call(this[j].h,this[i].h));
+					}
+				}
+			}
+
+		}
+		
 		function Player(){
-			this.r=0;        // for player's Rotation
+			this.rot=0;        // for player's Rotation
 			this.s=0.007;    // for player's rotation Speed
 			this.c="orange"; // for player's Color
 			this.bc="green"; // for Beam Color
+			this.player=true;
+			this.collisionFunction = function(){}
+			this.physics = new CollisionCircle(0,0,10,this,this.collisionFunction);
 		}
 		
 		Player.prototype.update=function(){
-			this.r%=2;
-			this.r+=this.s;
+			this.rot%=2;
+			this.rot+=this.s;
 		}
 		
 		Player.prototype.draw=function(){
@@ -62,7 +99,7 @@
 			ctx.strokeStyle = this.bc;
 			ctx.beginPath();
 			ctx.moveTo(0,0);
-			ctx.lineTo(Math.sin(Math.PI*this.r)*250,Math.cos(Math.PI*this.r)*250);
+			ctx.lineTo(Math.sin(Math.PI*this.rot)*250,Math.cos(Math.PI*this.rot)*250);
 			ctx.lineWidth = 2
 			ctx.stroke();
 			
@@ -72,56 +109,108 @@
 		Player.prototype.changeDir=function(){
 			this.s*=-1;
 		}
+		Player.prototype.shoot = function(){
+			new PlayerBullet(Math.sin(Math.PI*this.rot)*4,Math.cos(Math.PI*this.rot)*4,Math.sin(Math.PI*this.rot)*1,Math.cos(Math.PI*this.rot)*1,20)
+		}
 		
 		function StraightWalker(x,y,r,s,rs,rr,rd){
 			this.x = x;
 			this.y = y;
-			this.r=(r!=und)?r:0;
+			this.rot=(r!=und)?r:0;
 			this.s=(s!=und)?s:1;     // Speed
 			this.rs =(rs!=und)?rs:0.05; // Rotation Speed 
 			this.rr =(rr!=und)?rr:0.01; // Rotation Randomness // + or -
 			this.rd =(rd!=und)?rd:0; // Rotation Deviation // makes it go in spirals
+			this.enemy = true;
+			this.physics = new CollisionCircle(x,y,5,this,function(h){if(h.playerWeapon){this.dead=true;this.physics.dead=true}})
+			this.color="red";
+			enemies.push(this);
 		}
 		StraightWalker.prototype.update=function(){
 			var dr = ((Math.atan2(this.x,this.y)/Math.PI)-1)%2+this.rd;
-			var acw = (dr-this.r+2)%2;
-			var cw = (this.r-dr+2)%2;
-			this.r = ((acw<cw)?this.r+Math.min(acw,this.rs):this.r-Math.min(cw,this.rs))+this.rr-Math.random2()*this.rr*2;
-			this.x+=Math.sin(Math.PI*this.r)*this.s;
-			this.y+=Math.cos(Math.PI*this.r)*this.s;
+			var acw = (dr-this.rot+2)%2;
+			var cw = (this.rot-dr+2)%2;
+			this.rot = ((acw<cw)?this.rot+Math.min(acw,this.rs):this.rot-Math.min(cw,this.rs))+this.rr-Math.random2()*this.rr*2;
+			this.x+=Math.sin(Math.PI*this.rot)*this.s;
+			this.y+=Math.cos(Math.PI*this.rot)*this.s;
+			this.physics.x = this.x;
+			this.physics.y = this.y;
 		}
 		StraightWalker.prototype.draw = function(){
 			ctx.save();
 			ctx.translate(this.x,this.y);
-			ctx.rotate(Math.PI*(1-this.r))
-			
+			ctx.rotate(Math.PI*(1-this.rot))
+			ctx.fillStyle=this.color;
 			ctx.fillRect(-5,-5,10,10);
 			
 			ctx.restore();
 		}
 		
+		function PlayerBullet(x,y,vx,vy,s){
+			this.x=x;
+			this.y=y;
+			this.vx=vx;
+			this.vy= vy;
+			this.s=s;
+			this.ms=s*0.5;
+			this.playerWeapon=true;
+			this.damage = 5;
+			this.physics = new CollisionCircle(x,y,s*0.5,this,function(h){if(!h.player){this.dead=true;this.physics.dead=true}})
+			bullets.push(this);
+		}
+		PlayerBullet.prototype.update=function(){
+			this.x+=this.vx;
+			this.y+=this.vy;
+			this.physics.x=this.x;
+			this.physics.y=this.y;
+			if(this.x*this.x+this.y*this.y>62500+this.ms*this.ms+this.ms*500){this.dead=true;this.physics.dead=true}
+		}
+		PlayerBullet.prototype.draw=function(){
+		ctx.save()
+		ctx.fillStyle="lime"
+		ctx.beginPath();
+		ctx.arc(this.x, this.y, this.s*0.5, 0, Math.PI*2, true); 
+		ctx.closePath();
+		ctx.fill();
+		ctx.restore();
+		}
 		
 		var player = new Player(); 
 		var enemies =[];
-		 for(var i=0,n=50;i<n;i++){
-		 enemies[i] = new StraightWalker(Math.sin(Math.PI*i/n*2+Math.random2())*250,Math.cos(Math.PI*i/n*2+Math.random2())*250,Math.PI*i/n,Math.random2()*0.1+0.1,0.05,Math.random2()*0.2,Math.random2()*0.2); 
+		var bullets =[];
+		for(var i=0,n=50;i<n;i++){
+			new StraightWalker(Math.sin(Math.PI*i/n*2+Math.random2())*250,Math.cos(Math.PI*i/n*2+Math.random2())*250,Math.PI*i/n,Math.random2()*0.1+0.1,0.01,Math.random2()*0.2,Math.random2()*0.4-0.2); 
 		 
 		 }
+		new PlayerBullet(1,1,2,2,5);
 		
 		enemies.update=function(){
-			for(var i=0;i<enemies.length;i++){
-				enemies[i].update();
+			for(var i=0;i<this.length;i++){
+				if(this[i].dead){this.splice(i,1);i--}else{ this[i].update();}
 			}
 		}
 		enemies.draw=function(){
-			for(var i=0;i<enemies.length;i++){
-				enemies[i].draw();
+			for(var i=0;i<this.length;i++){
+				this[i].draw();
+			}
+		}
+		bullets.update=function(){
+			for(var i=0;i<this.length;i++){
+				if(this[i].dead){this.splice(i,1);i--}else{ this[i].update();}
+			}
+		}
+		bullets.draw=function(){
+			for(var i=0;i<this.length;i++){
+				this[i].draw();
 			}
 		}
 		
+		
 		function updateAll(){
 			player.update();
+			bullets.update();
 			enemies.update();
+			physics.check();
 		}
 		
 		function drawAll() {
@@ -131,10 +220,15 @@
 			ctx.restore();
 			enemies.draw();
 			player.draw();
+			bullets.draw();
 			requestAnimFrame(drawAll);
 		}
+		function keyPressed(evt){
+				if (evt.keyCode == 13) {player.shoot();}
+	if (evt.keyCode == 32) {player.changeDir();}
+		}
 		
-		
+		document.addEventListener("keydown",keyPressed,false)
 		setInterval(updateAll,10);
 		drawAll();
 		
