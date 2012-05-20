@@ -14,6 +14,7 @@
 		var ctx = canvas.getContext("2d");
 		Math.seedrandom("gol spo");
 		var und = undefined;
+		var doNothing=function(){};
 		
 		function setUpCanvas(){ctx.translate(canvas.width/2,canvas.height/2);
 		ctx.beginPath();
@@ -21,7 +22,7 @@
 		ctx.closePath();
 		ctx.fill();
 		ctx.globalCompositeOperation = "source-atop";
-		ctx.scale(0.7,0.7);
+		//ctx.scale(0.7,0.7);
 		}
 		
 		window.requestAnimFrame = (function(){
@@ -111,7 +112,7 @@
 			this.s*=-1;
 		}
 		Player.prototype.shoot = function(){
-			new PlayerBullet(Math.sin(Math.PI*this.rot)*4,Math.cos(Math.PI*this.rot)*4,Math.sin(Math.PI*this.rot)*1,Math.cos(Math.PI*this.rot)*1,20)
+			new PlayerBullet(Math.sin(Math.PI*this.rot)*4,Math.cos(Math.PI*this.rot)*4,Math.sin(Math.PI*this.rot)*3,Math.cos(Math.PI*this.rot)*3,20)
 		}
 		
 		function StraightWalker(x,y,r,s,rs,rr,rd){
@@ -147,7 +148,7 @@
 			ctx.restore();
 		}
 		
-		function PlayerBullet(x,y,vx,vy,s){
+		function PlayerBullet(x,y,vx,vy,s,pt){
 			this.x=x;
 			this.y=y;
 			this.vx=vx;
@@ -156,7 +157,8 @@
 			this.ms=s*0.5;
 			this.playerWeapon=true;
 			this.damage = 5;
-			this.physics = new CollisionCircle(x,y,s*0.5,this,function(h){if(!h.player){this.dead=true;this.physics.dead=true}})
+			this.collisionFunction=(pt)?function(h){if(!(h.player||h.playerWeapon)){this.dead=true;this.physics.dead=true}}:doNothing;
+			this.physics = new CollisionCircle(x,y,s*0.5,this,this.collisionFunction)
 			bullets.push(this);
 		}
 		PlayerBullet.prototype.update=function(){
@@ -195,17 +197,9 @@
 				this[i].draw();
 			}
 		}
-		bullets.update=function(){
-			for(var i=0;i<this.length;i++){
-				if(this[i].dead){this.splice(i,1);i--}else{ this[i].update();}
-			}
-		}
-		bullets.draw=function(){
-			for(var i=0;i<this.length;i++){
-				this[i].draw();
-			}
-		}
+		bullets.update=enemies.update;
 		
+		bullets.draw=enemies.draw;
 		
 		function updateAll(){
 			player.update();
