@@ -275,9 +275,10 @@ This text is displayed if your browser does not support HTML5 Canvas.
 			ctx.drawImage(background,-250,-250);
 			ctx.restore();
 			drawGui();
-			enemies.draw();
 			player.draw();
+			enemies.draw();
 			bullets.draw();
+			player.beamDraw();
 			requestAnimFrame(drawAll);
 		}
 		function keyDown(evt){
