@@ -253,6 +253,8 @@ This text is displayed if your browser does not support HTML5 Canvas.
 			new StraightWalker(this.x,this.y,this.rot-this.rd,this.bs,this.brs,this.brr,this.brd);
 		}
 		
+		Thrower.prototype.score=3;
+		
 		function PlayerBullet(x,y,vx,vy,s,pt){
 			this.x=x;
 			this.y=y;
@@ -350,19 +352,23 @@ This text is displayed if your browser does not support HTML5 Canvas.
 			var r = Math.random2()*difficulty;
 			switch(true){
 
-				case (r <= 0.2):
-					redGroup(20+difficulty*5,Math.random2()*0.3+0.1,Math.random2(),500,Math.random2()*0.2);
+				case (r<=0.2):
+					redWave(50+difficulty*20,Math.random2()*0.1+0.1,Math.random2(),1000);
+					break;
+					
+				case (r <= 0.4):
+					redGroup(20+difficulty*5,Math.random2()*0.2+0.1,Math.random2(),500,Math.random2()*0.2);
 					break;
 					
 
 				case (r <= 0.6):
-					redCircle(50+difficulty*5,Math.random2()*0.2+0.2,((Math.random2()<0.5)?-1:1)*(Math.random2()*0.2+0.1),500);
+					redCircle(50+difficulty*5,Math.random2()*0.2+0.1,((Math.random2()<0.5)?-1:1)*(Math.random2()*0.2+0.1),500);
 					break;
 
 					
 				case (r <= 0.8):
 					var rnd =Math.random2()*Math.PI*2; 
-					new Thrower(200,Math.cos(rnd)*270,Math.sin(rnd)*270,rnd,0.5,0.5,0.4,20,100,0.4,0.05,Math.random2()*0.01); 
+					new Thrower(200,Math.cos(rnd)*270,Math.sin(rnd)*270,rnd,0.5,0.5,0.4,200,500,0.4,0.05,Math.random2()*0.01); 
 					counter=50;
 					difficulty+=0.2;
 					break;
