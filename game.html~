@@ -1,6 +1,6 @@
 <html>
 	<head>
-		<title> Game </title>
+		<title> SpinTurret </title>
 		<script type="text/javascript" src="seedrandom.min.js"></script>
 	</head>
 	
@@ -169,14 +169,15 @@ This text is displayed if your browser does not support HTML5 Canvas.
 			this.reload=5;
 		}
 		
-		function StraightWalker(x,y,r,s,rs,rr,rd){
+		function StraightWalker(x,y,r,s,rs,rr,rd,t){
 			this.x = x;
 			this.y = y;
 			this.rot=(r!=und)?r:0;
-			this.s=(s!=und)?s:1;     // Speed
+			this.s=(s!=und)?s:0.4;     // Speed
 			this.rs =(rs!=und)?rs:0.05; // Rotation Speed 
 			this.rr =(rr!=und)?rr:0.01; // Rotation Randomness // + or -
 			this.rd =(rd!=und)?rd:0; // Rotation Deviation // makes it go in spirals
+			this.t = (t!=und)?t:true; // Track player.
 			this.enemy = true;
 			this.makeForm();
 			this.makePhysics();
@@ -198,10 +199,10 @@ This text is displayed if your browser does not support HTML5 Canvas.
 		StraightWalker.prototype.score=1;	
 		
 		StraightWalker.prototype.update=function(){
-			var dr = ((Math.atan2(this.x,this.y)/Math.PI)-1)%2+this.rd;
+			if(this.t){var dr = ((Math.atan2(this.x,this.y)/Math.PI)-1)%2+this.rd;
 			var acw = (dr-this.rot+2)%2;
 			var cw = (this.rot-dr+2)%2;
-			this.rot = ((acw<cw)?this.rot+Math.min(acw,this.rs):this.rot-Math.min(cw,this.rs))+this.rr-Math.random2()*this.rr*2;
+			this.rot = ((acw<cw)?this.rot+Math.min(acw,this.rs):this.rot-Math.min(cw,this.rs))+this.rr-Math.random2()*this.rr*2;}
 			this.x+=Math.sin(Math.PI*this.rot)*this.s;
 			this.y+=Math.cos(Math.PI*this.rot)*this.s;
 			this.physics.x = this.x;
@@ -253,7 +254,7 @@ This text is displayed if your browser does not support HTML5 Canvas.
 			new StraightWalker(this.x,this.y,this.rot-this.rd,this.bs,this.brs,this.brr,this.brd);
 		}
 		
-		Thrower.prototype.score=3;
+		Thrower.prototype.score=5;
 		
 		function PlayerBullet(x,y,vx,vy,s,pt){
 			this.x=x;
@@ -297,10 +298,11 @@ This text is displayed if your browser does not support HTML5 Canvas.
 		var difficulty=0.5;
 		var shot= 0;
 		var started=false;
+		var freezeTime = 0;
 		
 		enemies.update=function(){
 			for(var i=0;i<this.length;i++){
-				if(this[i].dead){this.splice(i,1);i--}else{ this[i].update();}
+				if(this[i].dead){this.splice(i,1);i--}else{ (!freezeTime)&&this[i].update();}
 			}
 		}
 		enemies.draw=function(){
@@ -308,14 +310,18 @@ This text is displayed if your browser does not support HTML5 Canvas.
 				this[i].draw();
 			}
 		}
-		bullets.update=enemies.update;
+		bullets.update=function(){
+			for(var i=0;i<this.length;i++){
+				if(this[i].dead){this.splice(i,1);i--}else{ this[i].update();}
+			}
+		}
 		
 		bullets.draw=enemies.draw;
 		
 		function redWave(n,speed,s,t){
 			for(var i=0;i<n;i++){
 				var rnd=Math.random2();
-				new StraightWalker(Math.sin(Math.PI*i/n*2+rnd)*270,Math.cos(Math.PI*i/n*2+rnd)*270,Math.PI*i/n,Math.random2()*speed+0.1,0.1,Math.random2()*s*0.3,(Math.random2()*0.4-0.2)*s); 
+				new StraightWalker(Math.sin(Math.PI*i/n*2+rnd)*270,Math.cos(Math.PI*i/n*2+rnd)*270,Math.PI*i/n,Math.random2()*speed+0.1,0.1,Math.random2()*s*0.3,(Math.random2()*0.4-0.2)*s,false); 
 		 	}
 		 	counter=t;
 		 	difficulty+=0.2;
@@ -345,6 +351,8 @@ This text is displayed if your browser does not support HTML5 Canvas.
 				var rnd=Math.random2();
 				new Thrower(Math.sin(Math.PI*i/n*2+rnd)*270,Math.cos(Math.PI*i/n*2+rnd)*270,Math.PI*i/n*2,s,0.5,r,d,tt); 
 		 	}
+		 	counter=t;
+		 	difficulty+=0.2;
 		
 		}
 		
@@ -368,7 +376,7 @@ This text is displayed if your browser does not support HTML5 Canvas.
 					
 				case (r <= 0.8):
 					var rnd =Math.random2()*Math.PI*2; 
-					new Thrower(200,Math.cos(rnd)*270,Math.sin(rnd)*270,rnd,0.5,0.5,0.4,200,500,0.4,0.05,Math.random2()*0.01); 
+					new Thrower(200,Math.cos(rnd)*270,Math.sin(rnd)*270,rnd,0.5,0.5,0.48,200,500,0.4,0.05,Math.random2()*0.01); 
 					counter=50;
 					difficulty+=0.2;
 					break;
@@ -380,11 +388,11 @@ This text is displayed if your browser does not support HTML5 Canvas.
 					break;
 					
 				case (r<=1.2):
-					redGroup(difficulty*5, 0.5+Math.random2(), 1, 250, Math.random2()*0.1)
+					redGroup(difficulty*5, 0.3*Math.random2(), 1, 250, Math.random2()*0.1)
 					break;
 					
 				case (r<=1.5):
-					throwerAttack(5,0.5,0.4,0,200,500)
+					throwerAttack(5,0.5,0.48,0,200,2000)
 					break;
 					
 				default:
@@ -397,15 +405,21 @@ This text is displayed if your browser does not support HTML5 Canvas.
 		}
 		
 		function updateAll(){
+			if(!freezeTime){
 			counter-=1;
 			(counter<=0)&&spawnEnemies();
+			}
+			enemies.update();
+			
+			freezeTime--;
+			freezeTime<0&&(freezeTime=0);
+			
 			mCounter-=.5;
 			(mCounter<=0)&&((multiplier>1)?(mCounter=100)+(multiplier--):(mCounter=0));
 			shot--;
 			shot<0&&(shot=0);
 			player.update();
 			bullets.update();
-			enemies.update();
 			physics.check();
 		}
 		
@@ -486,3 +500,4 @@ This text is displayed if your browser does not support HTML5 Canvas.
 	</script>
 	
 </html>
+
