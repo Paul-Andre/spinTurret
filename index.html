@@ -78,7 +78,6 @@ top:0px;
     var gui = document.getElementById("guiCanvas");
     var ctx = canvas.getContext("2d");
     var guiCtx= gui.getContext("2d");    
-    Math.seedrandom("any string you like lololol.");
     var und = undefined;
     var doNothing=function(){};
     var iSR2 = 1/Math.sqrt(2);
@@ -86,6 +85,12 @@ top:0px;
     var hasTouch = !!('ontouchstart' in window);
     
     var leaderboard;
+    
+    var seed="This seed will surely give the BEST game EVER. It must. There is no other possible way!!!!";
+    
+    
+    Math.seedrandom(seed);
+    
     
     function setUpCanvas(){ctx.translate(350,260);
     ctx.beginPath();
@@ -95,6 +100,8 @@ top:0px;
     ctx.globalCompositeOperation = "source-atop";
     //ctx.scale(0.7,0.7);
     }
+    
+    Math.random3=Math.random;
     
     window.requestAnimFrame = (function(){
           return  window.requestAnimationFrame       || 
@@ -177,7 +184,7 @@ top:0px;
     
     function Player(){
       this.rot=0;        // for player's Rotation
-      this.s=0.007;    // for player's rotation Speed
+      this.s=0.008;    // for player's rotation Speed
       this.c="orange"; // for player's Color
       this.bc="#02ac2e"; // for Beam Color
       this.player=true;
@@ -198,10 +205,23 @@ top:0px;
       this.physics = new CollisionCircle(0,0,16,this,this.collisionFunction);
     }
     
-    Player.prototype.update=function(){
-      this.rot%=2;
-      this.rot+=this.s;
-      ((!this.reload)&&this.shooting&&(this.energy>10))?gameOver||this.shoot():(this.reload)?(this.reload--):(this.energy<100&&(this.energy+=0.5));
+    Player.prototype.update=function( times){
+		this.rot%=2*times;
+		this.rot+=this.s*times;
+		if(this.reload<1){
+      
+			if ( this.shooting&&(this.energy>10)){
+		  
+				gameOver||this.shoot()
+
+		  
+			}
+					this.energy<100&&(this.energy+=0.5*times)
+		}else{
+		      this.reload=Math.max(0,this.reload-times);
+			//this.energy<100&&(this.energy+=0.5*times)
+		}
+		//this.energy<100&&(this.energy+=0.5*times)
     }
     
     Player.prototype.draw=function(){
@@ -255,16 +275,18 @@ top:0px;
     StraightWalker.prototype.specialUpdate=doNothing;
     StraightWalker.prototype.score=1;  
     
-    StraightWalker.prototype.update=function(){
+    StraightWalker.prototype.update=function(times){  //times is approximated
       if(!this.nt){var dr = ((Math.atan2(this.x,this.y)/Math.PI)-1)%2+this.rd;
       var acw = (dr-this.rot+2)%2;
       var cw = (this.rot-dr+2)%2;
-      this.rot = ((acw<cw)?this.rot+Math.min(acw,this.rs):this.rot-Math.min(cw,this.rs))+this.rr-Math.random2()*this.rr*2;}
-      this.x+=Math.sin(Math.PI*this.rot)*this.s;
-      this.y+=Math.cos(Math.PI*this.rot)*this.s;
+      for(var i=0;i<times-1;i++)Math.random3()
+      
+      this.rot = ((acw<cw)?this.rot+Math.min(acw,this.rs):this.rot-Math.min(cw,this.rs))+this.rr-Math.random3()*this.rr*2;}
+      this.x+=Math.sin(Math.PI*this.rot)*this.s*times;
+      this.y+=Math.cos(Math.PI*this.rot)*this.s*times;
       this.physics.x = this.x;
       this.physics.y = this.y;
-      this.specialUpdate();
+      this.specialUpdate(times);
     }
     StraightWalker.prototype.draw = function(){
       ctx.save();
@@ -303,8 +325,8 @@ top:0px;
     
     Thrower.prototype.makeForm=function(){this.w=15,this.h=20};
     
-    Thrower.prototype.specialUpdate=function(){
-      this.tCounter--;
+    Thrower.prototype.specialUpdate=function(times){
+      this.tCounter-=times;
       gameOver||(this.tCounter<=0)&&(this.shoot()+(this.tCounter=this.tt));
     }
       
@@ -344,8 +366,8 @@ top:0px;
     
     Spliter.prototype.makeForm=function(){this.w=17,this.h=20};
     
-    Spliter.prototype.specialUpdate=function(){
-      this.tCounter--;
+    Spliter.prototype.specialUpdate=function(times){
+      this.tCounter-=times;
       (this.tCounter<=0)&&this.shoot();
     }
     
@@ -376,9 +398,9 @@ top:0px;
       bullets.push(this);
     }
     
-    PlayerBullet.prototype.update=function(){
-      this.x+=this.vx;
-      this.y+=this.vy;
+    PlayerBullet.prototype.update=function(times){
+      this.x+=this.vx*times;
+      this.y+=this.vy*times;
       this.physics.x=this.x;
       this.physics.y=this.y;
       if(this.x*this.x+this.y*this.y>62500+this.ms*this.ms+this.ms*500){this.dead=true;this.physics.dead=true}
@@ -406,9 +428,9 @@ top:0px;
     var started=false;
     var freezeTime = 0;
     
-    enemies.update=function(){
+    enemies.update=function(times){
       for(var i=0;i<this.length;i++){
-        if(this[i].dead){this.splice(i,1);i--}else{ (!freezeTime)&&this[i].update();}
+        if(this[i].dead){this.splice(i,1);i--}else{ (!freezeTime)&&this[i].update(times);}
       }
     }
     enemies.draw=function(){
@@ -416,9 +438,9 @@ top:0px;
         this[i].draw();
       }
     }
-    bullets.update=function(){
+    bullets.update=function(times){
       for(var i=0;i<this.length;i++){
-        if(this[i].dead){this.splice(i,1);i--}else{ this[i].update();}
+        if(this[i].dead){this.splice(i,1);i--}else{ this[i].update(times);}
       }
     }
     
@@ -461,7 +483,7 @@ top:0px;
        difficulty+=0.2;
     
     }
-    new Spliter(Math.cos(1)*270,Math.sin(1)*270,1,0.5,0.5,0.1,0,false,3,0.5,0.5,200,0.4,0.01,Math.random2()*0.01); 
+    new Spliter(Math.cos(1)*270,Math.sin(1)*270,1,0.5,0.5,0.1,0,false,3,0.5,0.5,200,0.4,0.01,Math.random3()*0.01); 
     
     new StopTime(Math.sin(Math.PI*2)*270,Math.cos(Math.PI*2)*270,2,0.3,0.1,0,0.5)
     function spawnEnemies(){
@@ -469,7 +491,7 @@ top:0px;
       switch(true){
 
         case (r<=0.2):
-          redWave(50+difficulty*20,Math.random2()*0.1+0.1,Math.random2(),1000);
+          redWave(50+difficulty*20,Math.random2()*0.08+difficulty*0.1,Math.random2(),1000);
           break;
           
         case (r <= 0.4):
@@ -481,7 +503,7 @@ top:0px;
           redCircle(50+difficulty*5,Math.random2()*0.2+0.1,((Math.random2()<0.5)?-1:1)*(Math.random2()*0.2+0.1),500);
           break;
 
-          update
+
         case (r <= 0.8):
           var rnd =Math.random2()*Math.PI*2; 
           new Thrower(Math.cos(rnd)*270,Math.sin(rnd)*270,rnd,rnd*0.5+1,0.5,0.5,0.48,200,500,0.4,0.05,Math.random2()*0.01); 
@@ -533,21 +555,27 @@ top:0px;
     }
     
     function updateAll(){
+
+var times=3;
+
+
       if(!freezeTime){
-      counter-=1;
+      counter-=times;
       (counter<=0)&&spawnEnemies();
       }
-      enemies.update();
+      enemies.update(times);
       
       freezeTime--;
       freezeTime<0&&(freezeTime=0);
       
-      mCounter-=.5;
+      mCounter-=.5*times;
       (mCounter<=0)&&((multiplier>1)?(mCounter=100)+(multiplier--):(mCounter=0));
-      shot--;
+      shot-=times;
       shot<0&&(shot=0);
-      player.update();
-      bullets.update();
+      player.update(times);
+      bullets.update(times);
+  
+      
       physics.check();
     }
     
@@ -614,7 +642,7 @@ top:0px;
     shot= 0;
     player=new Player();
     
-    Math.seedrandom("any string you like lololol.");
+    Math.seedrandom(seed);
     }
     
 
@@ -642,7 +670,7 @@ top:0px;
     }
     
     function start(){
-      setInterval(updateAll,10);
+      setInterval(updateAll,30);
       drawAll();
       started=true;
     }
