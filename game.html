@@ -155,11 +155,12 @@ This text is displayed if your browser does not support HTML5 Canvas.
 			this.collisionFunction = function(h){
 			
 			if (h.enemy){
+				(!gameOver)?leaderboard.post( { score: score }, function(response) {
+					console.log( response );
+				} ):0;
 				gameOver=true
 				counter=NaN
-				leaderboard.post( { score: score }, function(response) {
-					console.log( response );
-				} );
+
 			}
 			}
 			this.physics = new CollisionCircle(0,0,16,this,this.collisionFunction);
@@ -595,7 +596,7 @@ This text is displayed if your browser does not support HTML5 Canvas.
 		
 		Clay.ready(function(){
 		
-			leaderboard = new Clay.Leaderboard( { id: 1 } );
+			leaderboard = new Clay.Leaderboard( { id: "spinturretscores" } );
 
 		
 		});
