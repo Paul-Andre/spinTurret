@@ -15,16 +15,29 @@
 				var tag = document.getElementsByTagName("script")[0]; tag.parentNode.insertBefore(clay, tag);
 			} )();
 		</script>
+		
+		<style type="text/css">
+		
+		.button{
+		
+		
+		position:absolute;
+		
+		}
+		</style>
 	</head>
 	
-	<body style="background-color:silver">
+	
+	
+	
+	<body style="background-color:#2b3136">
 	<div>
 		<!canvas id="gameCanvas" width="700" height="550"> <!/canvas>
 	</div>
 	<div id="canvasesdiv" style="position:relative; width:700px; height:550px">
 
 <canvas id="gameCanvas"
-style="z-index: 2;
+style="
 position:absolute;
 left:0px;
 top:0px;
@@ -32,15 +45,29 @@ top:0px;
 This text is displayed if your browser does not support HTML5 Canvas.
 </canvas>
 <canvas id="guiCanvas"
-style="z-index: 3;
+style="
 position:absolute;
 left:0px;
 top:0px;
 " width="700px" height="550">
-This text is displayed if your browser does not support HTML5 Canvas.
+
 </canvas>
+
+<div id="shootButton" class="button" style=" width:100px ; height:100px; left:100px; bottom:20px;background-image:url('enterButton.png');"></div>
+
+<div id="spinButton" class="button" style=" width:100px ; height:100px; right:100px; bottom:20px;background-image:url('spaceButton.png');"></div>
+
 </div>	
-	</body>
+
+
+
+
+
+
+
+
+
+
 	
 	<script>
 	
@@ -588,6 +615,16 @@ This text is displayed if your browser does not support HTML5 Canvas.
 
 		document.addEventListener("keydown",keyDown,false)
 		document.addEventListener("keyup",keyUp,false)
+		
+		var shootButton=document.getElementById("shootButton");
+		
+		var spinButton=document.getElementById("spinButton");
+		
+		
+		shootButton.onmousedown=function(){keyDown({keyCode:13})};
+		shootButton.onmouseup=function(){keyUp({keyCode:13})};		
+		spinButton.onmousedown=function(){keyDown({keyCode:32})};
+
 		function start(){
 			setInterval(updateAll,10);
 			drawAll();
@@ -602,6 +639,11 @@ This text is displayed if your browser does not support HTML5 Canvas.
 		});
 		
 	</script>
+
+
+
+	</body>
+
 	
 </html>
 
