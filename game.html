@@ -2,6 +2,19 @@
 	<head>
 		<title> SpinTurret </title>
 		<script type="text/javascript" src="seedrandom.min.js"></script>
+		<script type="text/javascript">
+			var Clay = Clay || {};
+			Clay.gameKey = "spinturret";
+			Clay.readyFunctions = [];
+			Clay.ready = function( fn ) {
+				Clay.readyFunctions.push( fn );
+			};
+			( function() {
+				var clay = document.createElement("script");
+				clay.src = ( "https:" == document.location.protocol ? "https://" : "http://" ) + "clay.io/api/api.js"; 
+				var tag = document.getElementsByTagName("script")[0]; tag.parentNode.insertBefore(clay, tag);
+			} )();
+		</script>
 	</head>
 	
 	<body style="background-color:silver">
@@ -34,11 +47,13 @@ This text is displayed if your browser does not support HTML5 Canvas.
 		var canvas = document.getElementById("gameCanvas");
 		var gui = document.getElementById("guiCanvas");
 		var ctx = canvas.getContext("2d");
-		var guiCtx= gui.getContext("2d");
+		var guiCtx= gui.getContext("2d");		
 		Math.seedrandom("any string you like lololol.");
 		var und = undefined;
 		var doNothing=function(){};
 		var iSR2 = 1/Math.sqrt(2);
+		
+		var leaderboard;
 		
 		function setUpCanvas(){ctx.translate(350,260);
 		ctx.beginPath();
@@ -137,7 +152,16 @@ This text is displayed if your browser does not support HTML5 Canvas.
 			this.shooting=false;
 			this.energy= 100;
 			this.reload = 0;
-			this.collisionFunction = function(h){h.enemy&&(gameOver=true)+(counter=NaN)}
+			this.collisionFunction = function(h){
+			
+			if (h.enemy){
+				gameOver=true
+				counter=NaN
+				leaderboard.post( { score: score }, function(response) {
+					console.log( response );
+				} );
+			}
+			}
 			this.physics = new CollisionCircle(0,0,16,this,this.collisionFunction);
 		}
 		
@@ -424,7 +448,7 @@ This text is displayed if your browser does not support HTML5 Canvas.
 					redCircle(50+difficulty*5,Math.random2()*0.2+0.1,((Math.random2()<0.5)?-1:1)*(Math.random2()*0.2+0.1),500);
 					break;
 
-					
+					update
 				case (r <= 0.8):
 					var rnd =Math.random2()*Math.PI*2; 
 					new Thrower(Math.cos(rnd)*270,Math.sin(rnd)*270,rnd,rnd*0.5+1,0.5,0.5,0.48,200,500,0.4,0.05,Math.random2()*0.01); 
@@ -536,11 +560,11 @@ This text is displayed if your browser does not support HTML5 Canvas.
 		}
 		
 		function updateScore(s){
-		score+=s*multiplier;
-		mCounter+=s*10;
+			score+=s*multiplier;
+			mCounter+=s*10;
 		
-		(mCounter>100)&&(mCounter%=100)+(multiplier++);
-		shot=25;
+			(mCounter>100)&&(mCounter%=100)+(multiplier++);
+			shot=25;
 		}
 		
 		function restart(){
@@ -568,6 +592,14 @@ This text is displayed if your browser does not support HTML5 Canvas.
 			drawAll();
 			started=true;
 		}
+		
+		Clay.ready(function(){
+		
+			leaderboard = new Clay.Leaderboard( { id: 1 } );
+
+		
+		});
+		
 	</script>
 	
 </html>
