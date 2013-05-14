@@ -33,11 +33,15 @@
   
   
   
-  <body style="background-color:#2b3136">
+  <body style="background-color:#2b3136;margin:0; padding:0 ">
   <div>
     <!canvas id="gameCanvas" width="700" height="550"> <!/canvas>
   </div>
-  <div id="canvasesdiv" style="position:relative; width:700px; height:550px;    display: block;   margin-left: auto;   margin-right: auto; top:100px;">
+  <div id="canvasesdiv" style="position:relative;
+  
+ 
+  
+   display: block;   margin-left: auto;   margin-right: auto; top:0px; left:0px;">
 
 <canvas id="gameCanvas"
 style="
@@ -86,7 +90,7 @@ top:0px;
     
     var leaderboard;
     
-    var seed="This seed will surely give the BEST game EVER. It must. There is no other possible way!!!!";
+    var seed="This seed will surely give the BEST game EVER. It must. There is no other possible way!!!! I love you!";
     
     
     Math.seedrandom(seed);
@@ -127,16 +131,36 @@ top:0px;
     var background = new Image();
     background.src="circleBackground.png";
     
+    var loading=true;
+    
+        var readyToSubmitScore=false;
+    
     var turret = new Image();
     turret.src="turret.png";
     var turretDestroyed = new Image();
     turretDestroyed.src="turretDestroyed.png";
     var startScreen = new Image();
     startScreen.src="startScreen.png";
+    var submitScoreScreen=new Image();
+    submitScoreScreen.src="submitScore.png";
     var gOScreen = new Image();
     gOScreen.src="gameOver.png"
-    startScreen.onload = function(){ctx.drawImage(startScreen,-250,-250);};
+    startScreen.onload = function(){
+    
 
+    
+    	ctx.drawImage(startScreen,-250,-250);
+   	 setTimeout(function(){ctx.drawImage(startScreen,-250,-250);},100);
+   	 loading=false;
+   	  enemies.length=0;//to get rid of things.
+   	  physics.length=0;
+   	  
+        gameOver=false;
+        player =new Player(); 
+        
+    };
+
+	
 
     var physics = [];
     
@@ -194,11 +218,19 @@ top:0px;
       this.collisionFunction = function(h){
       
       if (h.enemy){
-        (!gameOver)?leaderboard.post( { score: score }, function(response) {
-          console.log( response );
-        } ):0;
-        gameOver=true
-        counter=NaN
+      
+        if(!gameOver){
+        
+        	setTimeout(function(){readyToSubmitScore=true},500)
+        	
+
+		    gameOver=true 
+		    
+       	 counter=NaN
+        }
+       
+        
+        
 
       }
       }
@@ -380,9 +412,51 @@ top:0px;
     
     Spliter.prototype.disappear=function(){this.dead=true;this.killPhysics();}
     
-    var StopTime=StraightWalker;
+
     StopTime.prototype=new StraightWalker();
+    function StopTime(x,y,r,s,rs,rr,rd){
+      this.x = x;
+      this.y = y;
+      this.rot=(r!=und)?r:0;
+      this.s=(s!=und)?s:0.4;     // Speed
+      this.rs =(rs!=und)?rs:0.05; // Rotation Speed 
+      this.rr =(rr!=und)?rr:0.01; // Rotation Randomness // + or -
+      this.rd =(rd!=und)?rd:0; // Rotation Deviation // makes it go in spirals
+      this.nt = true; // No Track player.
+      this.enemy = true;
+      this.makeForm();
+      this.makePhysics();
+      this.color="cyan";
+      enemies.push(this);
+    }
     
+    StopTime.prototype.makeForm=function(){this.w=12,this.h=20};
+    StopTime.prototype.collisionFunction=function(h){if(h.playerWeapon){
+    
+   	 this.die();
+   	 freezeTime+=200;
+    }};
+    
+    StopTime.prototype.die=function(){this.dead=true;this.killPhysics();updateScore(this.score);}
+    
+    StopTime.prototype.makePhysics=function(){
+    this.physics = new CollisionCircle(this.x,this.y,Math.max(this.w,this.h)*iSR2,this,this.collisionFunction);
+    };
+    
+    StopTime.prototype.killPhysics=function(){this.physics.dead=true;};
+    StopTime.prototype.specialUpdate=doNothing;
+    StopTime.prototype.score=1;  
+
+
+    StopTime.prototype.draw = function(){
+      ctx.save();
+      ctx.translate(this.x,this.y);
+      ctx.rotate(Math.PI*(1-this.rot))
+      ctx.fillStyle=this.color;
+      ctx.fillRect(this.w*-0.5,this.h*-0.5,this.w,this.h);
+      
+      ctx.restore();
+    }
     
     function PlayerBullet(x,y,vx,vy,s,pt){
       this.x=x;
@@ -416,7 +490,7 @@ top:0px;
     ctx.restore();
     }
     
-    var player = new Player(); 
+    var player;
     var bullets =[];
     var gameOver=false;
     var counter=0;
@@ -432,6 +506,7 @@ top:0px;
       for(var i=0;i<this.length;i++){
         if(this[i].dead){this.splice(i,1);i--}else{ (!freezeTime)&&this[i].update(times);}
       }
+
     }
     enemies.draw=function(){
       for(var i=0;i<this.length;i++){
@@ -483,15 +558,26 @@ top:0px;
        difficulty+=0.2;
     
     }
-    new Spliter(Math.cos(1)*270,Math.sin(1)*270,1,0.5,0.5,0.1,0,false,3,0.5,0.5,200,0.4,0.01,Math.random3()*0.01); 
+
     
-    new StopTime(Math.sin(Math.PI*2)*270,Math.cos(Math.PI*2)*270,2,0.3,0.1,0,0.5)
     function spawnEnemies(){
       var r = Math.random2()*difficulty;
+      
+      if (r>1.8&& Math.random2()>0.7){
+      
+      	
+      	new StopTime(Math.cos(r)*250,Math.sin(r)*250,r+1.5+Math.random2()*0.1,2,0.5,0.1,0.1);
+      
+      }
+      
+    //  console.log(r);
+      
+      
+      
       switch(true){
 
         case (r<=0.2):
-          redWave(50+difficulty*20,Math.random2()*0.08+difficulty*0.1,Math.random2(),1000);
+          redWave(40-Math.pow(2,-difficulty+5),Math.random2()*0.08+difficulty*0.1,Math.random2(),1000);
           break;
           
         case (r <= 0.4):
@@ -512,7 +598,6 @@ top:0px;
           difficulty+=0.2;
           break;
           
-        
 
         case (r<=1):
           var rnd =Math.random2()*Math.PI*2; 
@@ -527,18 +612,26 @@ top:0px;
           redGroup(difficulty*5, 0.3*Math.random2(), 1, 500, Math.random2()*0.1)
           break;
           
-        case (r<=1.4):
+        case (r<=1.6):
           throwerAttack(5,0.5,0.48,0,200,1500)
           break;
         
-        case (r<=1.7):
-          redWave(10+difficulty*20,0.4,Math.random2(),700);
+        case (r<=1.8):
+        
+          var rnd =Math.random2()*Math.PI*2; 
+        	new StopTime(Math.cos(rnd)*270,Math.sin(rnd)*270,rnd+1.5+Math.random2()*0.2,1,0.5,0.1,0.1);
+        counter=5;
+        	
+        	break;
+        
+        case (r<=1.9):
+          redWave(10+difficulty*20,0.3,Math.random2(),700);
           break;  
           
-        case (r<=1.9):
+        case (r<=2):
           for (var i=0;i<difficulty*2;i++){
           var rnd =Math.random2()*Math.PI*2; 
-          new Spliter(Math.cos(rnd)*270,Math.sin(rnd)*270,rnd,0.5,0.5,0.1,0,false,3,0.7,0.5,50+rnd*75,0.25,0.1,Math.random2()*0.5); 
+          new Spliter(Math.cos(rnd)*270,Math.sin(rnd)*270,rnd+1.5,0.5,0.5,0.1,0,false,3,0.7,0.5,50+rnd*75,0.25,0.1,Math.random2()*0.5); 
           //Spliter(x,y,r,s,rs,rr,rd,nt,tn,ta,td,ott,bs,brs,brr,brd,bnt)
           }
           counter=1500;
@@ -591,12 +684,26 @@ var times=3;
       bullets.draw();
       //player.beamDraw();
       requestAnimFrame(drawAll);
+      readyToSubmitScore&&ctx.drawImage(submitScoreScreen,-250,-250);
     }
     function keyDown(evt){
-        if (evt.keyCode == 13) {player.shooting=true;}
+        if (evt.keyCode == 13) {player.shooting=true;
+        
+        readyToSubmitScore&&submitScore();}
+        
   if (evt.keyCode == 32) {player.changeDir();gameOver&&restart();started||start()}
     }
     
+    function submitScore(){
+    
+			leaderboard.post( { score: score }, function(response) {
+				console.log( response );
+				leaderboard.show();
+			} );
+			
+		    readyToSubmitScore=false;
+    
+    }
     function keyUp(evt){
         if (evt.keyCode == 13) {player.shooting=false;}
   //if (evt.keyCode == 13) {player.changeDir();}
@@ -643,6 +750,8 @@ var times=3;
     player=new Player();
     
     Math.seedrandom(seed);
+    
+    readyToSubmitScore=false;
     }
     
 
@@ -673,6 +782,8 @@ var times=3;
       setInterval(updateAll,30);
       drawAll();
       started=true;
+      player = new Player(); 
+      readyToSubmitScore=false;
     }
     
     
@@ -693,21 +804,31 @@ var times=3;
       container.style['height']=h*2;
       window.scrollTo(0,1);
       
-        h = window.innerHeight + 10;
+
+        
+        
+
+        //({ height: h, width: w, padding: 0, margin: 0});
+        
+        
+                h = window.innerHeight + 10;
   container.style["height"]=h
     container.style["width"]=w
       container.style["padding"]=0;
-      container.style["margin"]=0
-        
-        
-        setupProportionalCanvas()
-        //({ height: h, width: w, padding: 0, margin: 0});
+      container.style["margin"]=0 ;
+             setupProportionalCanvas()
     }
     
     
      function setupProportionalCanvas() {
    var  h = window.innerHeight, w = window.innerWidth;
-
+           var container = document.getElementById("canvasesdiv");
+  container.style["height"]=h
+    container.style["width"]=w
+      container.style["padding"]=0;
+      container.style["margin"]=0
+	container.style.top=0;
+	
       var canvasH = canvas.height, 
        canvasW = canvas.width,
        maxHeightMult = h / canvasH,
@@ -716,7 +837,7 @@ var times=3;
        destH = canvasH * multiplier,
        destW = canvasW * multiplier;
 
-   canvas.style.positiom="absolute"
+   canvas.style.position="absolute"
 
        canvas.style.height=destH;
          canvas.style.width=destW;
@@ -731,8 +852,38 @@ var times=3;
         
 
  }
-    setupMobileFull()
+ 
+ var limitedScreen= (canvas.width>window.innerWidth || canvas.height>window.innerWidth)
+ if(limitedScreen){
+    setupMobileFull();
+  }
+  else setupProportionalCanvas(); 
+    
       
+      
+window.onorientationchange=setupMobileFull;    
+    
+      
+       
+    for(var i=0;i<20;i++){
+    
+    new StraightWalker(0,0,Math.random()*2,1.5,0.1 ,0.5,1 );
+      //StraightWalker(x,y,              r,s  ,rs,rr ,rd,nt)
+    }
+
+    
+    function loadingDistraction(){
+    if (loading==true){
+    ctx.fillStyle="#2b3136";
+   	 ctx.fillRect(-250,-250,500,500);
+    	enemies.update(1);
+    	enemies.draw();
+    
+    requestAnimFrame(loadingDistraction)}
+    
+    }
+    requestAnimFrame(loadingDistraction)
+    
     
   </script>
 
