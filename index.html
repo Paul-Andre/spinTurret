@@ -18,7 +18,7 @@
     
     <style type="text/css">
     
-    .button{
+    .buttonControl{
     
     
     position:absolute;
@@ -60,13 +60,13 @@ top:0px;
 
 </canvas>
 
-<div id="shootButton" class="button" style=" width:100px ; height:100px; left:10px; bottom:10px;background-image:url('enterButton.png');"></div>
+<div id="shootButton" class="buttonControl" style=" width:100px ; height:100px; left:10px; bottom:10px;background-image:url('enterButton.png');"></div>
     
-<div id="spinButton" class="button" style=" width:100px ; height:100px; right:10px; bottom:10px;background-image:url('spaceButton.png');"></div>
+<div id="spinButton" class="buttonControl" style=" width:100px ; height:100px; right:10px; bottom:10px;background-image:url('spaceButton.png');"></div>
 
 </div>  
 
-
+<div id="mobileAdContainer" style="top:0px; right:0px; margin:0; padding:0; background-color:red;"></div>
 
 
 
@@ -93,7 +93,7 @@ top:0px;
     var seed="This seed will surely give the BEST game EVER. It must. There is no other possible way!!!! I love you!";
     
     
-    Math.seedrandom(seed);
+    Math.seedrandom(seed+Math.random());
     
     
     function setUpCanvas(){ctx.translate(350,260);
@@ -565,8 +565,9 @@ top:0px;
       
       if (r>1.8&& Math.random2()>0.7){
       
+     var rnd =r*Math.PI; 
       	
-      	new StopTime(Math.cos(r)*250,Math.sin(r)*250,r+1.5+Math.random2()*0.1,2,0.5,0.1,0.1);
+      	new StopTime(Math.cos(rnd)*270,Math.sin(rnd)*270,-r+1.62+Math.random2()*0.3,1.5,0,0,0);
       
       }
       
@@ -592,7 +593,7 @@ top:0px;
 
         case (r <= 0.8):
           var rnd =Math.random2()*Math.PI*2; 
-          new Thrower(Math.cos(rnd)*270,Math.sin(rnd)*270,rnd,rnd*0.5+1,0.5,0.5,0.48,200,500,0.4,0.05,Math.random2()*0.01); 
+          new Thrower(Math.cos(rnd)*270,Math.sin(rnd)*270,rnd+1.5,rnd*0.5+1,0.5,0.5,0.48,200,500,0.4,0.05,Math.random2()*0.01); 
           //Thrower(x,y,r,s,rs,rr,rd,tt,ott,bs,brs,brr,brd,bt)
           counter=50;
           difficulty+=0.2;
@@ -613,13 +614,17 @@ top:0px;
           break;
           
         case (r<=1.6):
-          throwerAttack(5,0.5,0.48,0,200,1500)
+          throwerAttack(5,0.5,0.48,0,200,1000)
           break;
         
         case (r<=1.8):
         
-          var rnd =Math.random2()*Math.PI*2; 
-        	new StopTime(Math.cos(rnd)*270,Math.sin(rnd)*270,rnd+1.5+Math.random2()*0.2,1,0.5,0.1,0.1);
+        
+             var rr=Math.random(),rnd =r*Math.PI; 
+      	
+      	new StopTime(Math.cos(rnd)*270,Math.sin(rnd)*270,-rr+1.62+Math.random2()*0.3,1.5,0,0.1,0);
+      	
+
         counter=5;
         	
         	break;
@@ -637,6 +642,9 @@ top:0px;
           counter=1500;
           difficulty+=0.2;
           
+        case (r<=2.3):
+          throwerAttack(5,0.5,0.48,0.2,100,1000)
+          break;
           
         default:
           redWave(50+difficulty*5,Math.random2()*0.2+0.1*difficulty,Math.random2(),1000);
@@ -749,7 +757,7 @@ var times=3;
     shot= 0;
     player=new Player();
     
-    Math.seedrandom(seed);
+    Math.seedrandom(seed+Math.random());
     
     readyToSubmitScore=false;
     }
@@ -884,7 +892,7 @@ window.onorientationchange=setupMobileFull;
     }
     requestAnimFrame(loadingDistraction)
     
-    
+
   </script>
 
 
