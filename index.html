@@ -221,10 +221,12 @@ top:0px;
       
         if(!gameOver){
         
-        	setTimeout(function(){readyToSubmitScore=true},500)
+        	setTimeout(function(){gameOver&&readyToSubmitScore=true},500)
         	
 
-		    gameOver=true 
+Clay.Stats.level( { action: 'fail', level: 'game' } );
+
+		    gameOver=true ;
 		    
        	 counter=NaN
         }
@@ -704,7 +706,7 @@ var times=3;
     
     function submitScore(){
     
-			leaderboard.post( { score: score }, function(response) {
+			gameOver && leaderboard.post( { score: score }, function(response) {
 				console.log( response );
 				leaderboard.show();
 			} );
@@ -760,6 +762,10 @@ var times=3;
     Math.seedrandom(seed+Math.random());
     
     readyToSubmitScore=false;
+    
+    // Start a level
+Clay.Stats.level( { action: 'start', level: 'game' } );
+
     }
     
 
@@ -792,6 +798,9 @@ var times=3;
       started=true;
       player = new Player(); 
       readyToSubmitScore=false;
+      // Start a level
+		Clay.Stats.level( { action: 'start', level: 'game' } );
+
     }
     
     
