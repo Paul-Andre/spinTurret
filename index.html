@@ -5,13 +5,14 @@
     <script type="text/javascript">
       var Clay = Clay || {};
       Clay.gameKey = "SpinTurret";
+     Clay.options = { debug: true };
       Clay.readyFunctions = [];
       Clay.ready = function( fn ) {
         Clay.readyFunctions.push( fn );
       };
       ( function() {
         var clay = document.createElement("script");
-        clay.src = ( "https:" == document.location.protocol ? "https://" : "http://" ) + "clay.io/api/api.js"; 
+clay.src = ( "https:" == document.location.protocol ? "https://" : "http://" ) + "clay.io/api/api-stats-data-leaderboard-achievement-twitter-facebook-stream-ratings-advertisement.js";  
         var tag = document.getElementsByTagName("script")[0]; tag.parentNode.insertBefore(clay, tag);
       } )();
     </script>
@@ -219,14 +220,8 @@ top:0px;
       
         if(!gameOver){
         
-        	setTimeout(function(){gameOver&&(readyToSubmitScore=true)},500)
-        	
+      	  endGame()
 
-Clay.Stats.level( { action: 'fail', level: 'game' } );
-
-		    gameOver=true ;
-		    
-       	 counter=NaN
         }
        
         
@@ -702,7 +697,68 @@ var times=3;
   if (evt.keyCode == 32) {player.changeDir();gameOver&&restart();started||start()}
     }
     
+    
+    
+    
+
+    
+   function endGame(){
+   
+   
+            	//setTimeout(function(){gameOver&&(readyToSubmitScore=true)},500)
+        	
+
+Clay.Stats.level( { action: 'fail', level: 'game' } );
+
+		    gameOver=true ;
+		    
+       	 counter=NaN
+       	 
+       	 
+       	 leaderboard.fetch({limit:10},function(results){
+       	 
+       	 
+       	 var banality=true;
+       	 
+       	 
+       	 
+       	 	if(score>results[0].score){
+       	 	
+       	 		banality=false;
+       	 	
+       	 		( new Clay.Achievement( { id: "spinturret top one" } ) ).award();
+       	 		
+       	 		submitScore();
+       	 	}
+       	 	else
+       	 	for(var i=1;i<results.length;i++){
+       	 	
+       	 		if (score>results[i].score){
+       	 			
+       	 			banality=false;
+       	 			i=results.length // (to get out of the loop)
+       	 			
+       	 			( new Clay.Achievement( { id: "spinturret top five" } ) ).award();
+       	 			submitScore();
+       	 		
+       	 		}
+       	 	
+       	 	}
+       	 	
+       	 	
+       	 	if(banality)setTimeout(function(){gameOver&&(readyToSubmitScore=true)},500)
+       	 	
+       	 
+       	 })
+       	 
+    }
+    
     function submitScore(){
+    		//alert("submitscore()");
+    		
+    		//leaderboard.fetch({limit:1},function(results){
+    		
+    		//console.log(results[0].scor
     
 			gameOver && leaderboard.post( { score: score }, function(response) {
 				console.log( response );
@@ -710,8 +766,25 @@ var times=3;
 			} );
 			
 		    readyToSubmitScore=false;
+		    
+		    }
     
-    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     function keyUp(evt){
         if (evt.keyCode == 13) {player.shooting=false;}
   //if (evt.keyCode == 13) {player.changeDir();}
